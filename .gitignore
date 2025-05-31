@@ -1,0 +1,9 @@
+.DS_Store
+*.pyc
+__pycache__
+.ropeproject/
+
+*.mp4
+ouput
+build
+target
