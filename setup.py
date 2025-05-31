@@ -5,10 +5,10 @@ setup(
     version="0.0.1",
     packages=find_packages(),
     install_requires=[
-        "imageio>=2.9.0",
-        "Pillow>=9.0.0",
-        "imageio-ffmpeg>=0.4.7",
-        "makelive>=0.6.2",  # 添加 makelive 依赖
+        "imageio>=2.37.0",
+        "Pillow>=11.1.0",
+        "imageio-ffmpeg>=0.6.0",
+        "makelive>=0.6.2",
     ],
     entry_points={
         "console_scripts": [
