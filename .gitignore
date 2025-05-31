@@ -3,6 +3,9 @@
 __pycache__
 .ropeproject/
 
+dist
+video2live.egg-info
+
 *.mp4
 ouput
 build
