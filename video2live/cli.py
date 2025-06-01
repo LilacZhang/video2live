@@ -106,6 +106,7 @@ def import_to_photos(jpg_path, mov_path):
     script = f"""
     tell application "Photos"
         activate
+        launch
         set jpgFile to POSIX file "{jpg_path}" as alias
         set movFile to POSIX file "{mov_path}" as alias
         import [jpgFile, movFile] with skip check duplicates
