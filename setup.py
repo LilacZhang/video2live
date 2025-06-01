@@ -2,11 +2,12 @@ from setuptools import setup, find_packages
 
 setup(
     name="video2live",
-    version="0.0.1",
+    version="0.0.2",
     packages=find_packages(),
     install_requires=[
+        "moviepy>=2.1.1",
         "imageio>=2.37.0",
-        "Pillow>=11.1.0",
+        "Pillow>=10.1.0",
         "imageio-ffmpeg>=0.6.0",
         "makelive>=0.6.2",
     ],
