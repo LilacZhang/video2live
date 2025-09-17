@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="video2live",
-    version="0.0.4",
+    version="0.0.6",
     packages=find_packages(),
     install_requires=[
         "moviepy>=2.1.1",
