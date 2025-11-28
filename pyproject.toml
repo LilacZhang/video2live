@@ -1,0 +1,32 @@
+[project]
+name = "video2live"
+version = "0.1.0"
+description = "Convert videos into iOS Live Photos from the command line."
+authors = [
+    { name = "Your Name", email = "your@email.com" }
+]
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.8"
+
+dependencies = [
+    "moviepy>=1.0.0",
+    "makelive>=0.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourname/video2live"
+Repository = "https://github.com/yourname/video2live"
+Issues = "https://github.com/yourname/video2live/issues"
+
+# 安装后自动生成命令行工具：video2live
+[project.scripts]
+video2live = "video2live.cli:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+# 可选：包含软件包目录
+[tool.setuptools.packages.find]
+where = ["video2live"]

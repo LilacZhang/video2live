@@ -12,6 +12,7 @@ import subprocess
 import shutil
 from moviepy import VideoFileClip
 from makelive import make_live_photo
+import glob
 
 
 def check_dependencies():
@@ -39,7 +40,9 @@ def check_dependencies():
         sys.exit(1)
 
 
-def convert_video_to_mov(input_path, output_path, duration=3.0, start_time=None, end_time=None):
+def convert_video_to_mov(
+    input_path, output_path, duration=3.0, start_time=None, end_time=None
+):
     """转换视频为兼容Live Photo的MOV格式"""
     cmd = [
         "ffmpeg",
@@ -56,16 +59,18 @@ def convert_video_to_mov(input_path, output_path, duration=3.0, start_time=None,
         cmd.extend(["-to", str(end_time)])
 
     # 视频编码参数
-    cmd.extend([
-        "-c:v",
-        "h264",
-        "-c:a",
-        "aac",
-        "-movflags",
-        "+faststart",
-        "-pix_fmt",
-        "yuv420p",
-    ])
+    cmd.extend(
+        [
+            "-c:v",
+            "h264",
+            "-c:a",
+            "aac",
+            "-movflags",
+            "+faststart",
+            "-pix_fmt",
+            "yuv420p",
+        ]
+    )
 
     # 如果没有指定结束时间，使用持续时长
     if end_time is None and start_time is not None:
@@ -80,7 +85,14 @@ def convert_video_to_mov(input_path, output_path, duration=3.0, start_time=None,
         return False
 
 
-def video_to_live_photo(video_path, output_dir, duration=3.0, start_time=None, end_time=None, cover_time=None):
+def video_to_live_photo(
+    video_path,
+    output_dir,
+    duration=3.0,
+    start_time=None,
+    end_time=None,
+    cover_time=None,
+):
     """将视频转换为Live Photo"""
     if not os.path.exists(video_path):
         sys.exit("❌ 错误: 视频文件不存在")
@@ -145,19 +157,18 @@ def main():
         description="将视频转换为苹果Live Photo格式",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("video", help="输入视频文件路径")
+    parser.add_argument("input", help="输入视频文件路径或目录")
     parser.add_argument("output", help="输出目录")
     parser.add_argument(
         "-d", "--duration", type=float, default=3.0, help="Live Photo视频时长（秒）"
     )
+    parser.add_argument("-ss", type=float, help="开始时间（秒），类似ffmpeg -ss参数")
+    parser.add_argument("-to", type=float, help="结束时间（秒），类似ffmpeg -to参数")
     parser.add_argument(
-        "-ss", type=float, help="开始时间（秒），类似ffmpeg -ss参数"
-    )
-    parser.add_argument(
-        "-to", type=float, help="结束时间（秒），类似ffmpeg -to参数"
-    )
-    parser.add_argument(
-        "-c", "--cover-time", type=float, help="指定封面图时间（秒），默认使用截取片段的第一帧"
+        "-c",
+        "--cover-time",
+        type=float,
+        help="指定封面图时间（秒），默认使用截取片段的第一帧",
     )
     parser.add_argument(
         "--no-import", action="store_true", help="不自动导入到Photos应用"
@@ -165,18 +176,43 @@ def main():
 
     args = parser.parse_args()
 
+    # 处理输入：文件、目录或通配符
+    input_path = args.input
+    video_files = []
+
+    if os.path.isfile(input_path):
+        video_files = [input_path]
+    elif os.path.isdir(input_path):
+        video_files = []
+        for ext in ("*.mp4", "*.mov", "*.m4v", "*.avi", "*.mpg", "*.mpeg"):
+            video_files.extend(glob.glob(os.path.join(input_path, ext)))
+    else:
+        # 通配符模式，如 folder/*.mp4
+        video_files = glob.glob(input_path)
+
+    if not video_files:
+        sys.exit("❌ 未找到可处理的视频文件")
+
     # 验证时间参数
     if args.ss is not None and args.to is not None:
         if args.to <= args.ss:
             sys.exit("❌ 错误: -to 时间必须大于 -ss 时间")
         if args.duration is not None and args.duration > (args.to - args.ss):
-            print(f"⚠️  警告: 指定时长 {args.duration} 大于截取片段长度 {args.to - args.ss}，将使用截取片段长度")
+            print(
+                f"⚠️  警告: 指定时长 {args.duration} 大于截取片段长度 {args.to - args.ss}，将使用截取片段长度"
+            )
             args.duration = args.to - args.ss
 
-    jpg, mov = video_to_live_photo(args.video, args.output, args.duration, args.ss, args.to, args.cover_time)
+    for vf in video_files:
+        print(f"\n📌 正在处理: {vf}")
+        jpg, mov = video_to_live_photo(
+            vf, args.output, args.duration, args.ss, args.to, args.cover_time
+        )
 
-    if not args.no_import and sys.platform == "darwin":
-        import_to_photos(jpg, mov)
+        if not args.no_import and sys.platform == "darwin":
+            import_to_photos(jpg, mov)
+
+    print("\n✅ 全部视频处理完成")
 
 
 if __name__ == "__main__":
